@@ -4,7 +4,7 @@
 # This clears the terminal screen
 Gem.win_platform? ? (system "cls") : (system "clear")
 
-$loop_count = 0
+
 
 # - - - - - - - - - - - - - - - - - FUNCTIONS - - - - - - - - - - - - - - - - - - #
 
@@ -38,44 +38,51 @@ def member_register(user)
   print "How many hours a week does #{member_name} work? "
   hours_worked = $stdin.gets.chomp.to_i
 
+  # This calculates the monthly net income
   monthly_net_income = monthly_income(hourly_pay, hours_worked)
+  # This calculates the yearly income
   yearly_income = annual_income(monthly_net_income)
 
+  # This adds each of the entered and calculated variables into an array known as
+  # "member". This array is returned at the end of the function
   member << member_name
   member << monthly_net_income
   member << yearly_income
-  puts member
 
+
+  # The function outputs the "member" array
   return member
 end
 
-# This loops the function member_register for as many members as the user
+# This loops the function "member_register" for as many members as the user
 # specifies
 def member_register_loop(number_of_people)
+  # This creates an empty array called "members"
+  members = []
   (1..number_of_people).each do |user|
-    #members = []
-    #members.push(member_register(user))
-    #members[user] << (member_register(user))
+    # This runs the "member_register" function and stores the output array
+    # inside the variable "member"
     member = member_register(user)
 
-    $loop_count = $loop_count + 1
-    puts $loop_count
-
-    return member
+    members << member
   end
+  # This returns the array "members" at the end of the function
+  return members
 end
 
 
-# - - - - - - - - - - - - - - - USER INPUT - - - - - - - - - - - - - - - - - - - - #
+# - - - - - - - - - - - - - - - USER INPUT - - - - - - - - - - - - - - - - - - - #
 
 print "How many people is this budget for? "
 number_of_people = $stdin.gets.chomp.to_i
+puts "#{number_of_people}"
 
-members = Array.new
-members << member_register_loop(number_of_people)
+# This runs the function "member_register_loop" for the amount of people the
+# user specifies above and stores the output in the variable "members"
+members = member_register_loop(number_of_people)
 puts members
 
-# - - - - - - - - - - - - - - - CALCULATIONS - - - - - - - - - - - - - - - - - - - #
+# - - - - - - - - - - - - - - - CALCULATIONS - - - - - - - - - - - - - - - - - - #
 
 # These calculate what we can afford each month; i.e., our budget
 #rent = combined_monthly * 0.3
