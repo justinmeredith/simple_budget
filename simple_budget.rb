@@ -127,9 +127,6 @@ end
 
 
 
-
-
-
 # - - - - - - - - - - - - - - - RUNNING THE PROGRAM - - - - - - - - - - - - - - - #
 
 print "How many people is this budget for? "
