@@ -11,7 +11,7 @@
 # "user" in the context of comments and meta is referring to the person
 # actually running the program.
 # Comments that look like "# - - - - - - TEXT - - - - - - - #" are used to
-# separate the different groupings of code blocks withing the
+# separate the different groupings of code blocks within the
 # program. They are merely for the sake of easing the process
 # of reading the code.
 
