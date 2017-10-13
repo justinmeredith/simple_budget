@@ -168,7 +168,7 @@ leftover = combined_monthly - (living + bills + gas + groceries)
 
 individual_incomes = individual_incomes_message_func(number_of_people, members)
 
-budget_message = """
+budget_message = <<EOS
 
 Combined, you make $#{sprintf('%.2f', combined_monthly)} per month, and $#{sprintf('%.2f', combined_annual)} per year.
 
@@ -184,7 +184,7 @@ Keep in mind that these estimates are based on averages,
 and provide room for flexibility.
 Also remember to try and stay under budget so that
 you have more left over each month.
-"""
+EOS
 
 
 
