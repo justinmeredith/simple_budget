@@ -46,7 +46,11 @@ def combined_monthly_func(number_of_people, members)
       # "monthly_net_income" element of each user's grouping in the array "members"
       combined_monthly += members[user][1]
     end
+  elsif 
+    # This allows for a single user to make a budget as well.
+    combined_monthly += members[0][1]
   end
+      
   return combined_monthly
 end
 
