@@ -170,7 +170,7 @@ individual_incomes = individual_incomes_message_func(members)
 
 budget_message = <<MSG
 
-Combined, you make $#{sprintf('%.2f', combined_monthly)} per month, and $#{sprintf('%.2f', combined_annual)} per year.
+Combined, this household makes $#{sprintf('%.2f', combined_monthly)} per month, and $#{sprintf('%.2f', combined_annual)} per year.
 
 Here is a break down of your monthly budget:
   * You can afford a living expense of $#{sprintf('%.2f', living)}.
