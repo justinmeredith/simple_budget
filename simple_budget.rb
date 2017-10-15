@@ -27,38 +27,42 @@ Gem.win_platform? ? (system "cls") : (system "clear")
 # An estimate of 10% tax is used
 def monthly_income_func(hourly_pay, hours_worked)
   monthly_gross_income = hourly_pay * hours_worked * 4
-  monthly_net_income = monthly_gross_income - (monthly_gross_income * 0.10)
-  return monthly_net_income
+  monthly_gross_income - (monthly_gross_income * 0.10)
 end
 
 # This calculates a member's annual income
 def annual_income_func(monthly_net_income)
-  annual_income = monthly_net_income * 12
-  return annual_income
+  monthly_net_income * 12
 end
 
 # This calculates the combined monthly incomes of the members
 def combined_monthly_func(number_of_people, members)
   combined_monthly = 0
   if number_of_people > 1
-    (0...number_of_people).each do |user|
+    members.each do |user|
       # This adds the previous value of the "combined_monthly" variable to the
       # "monthly_net_income" element of each user's grouping in the array "members"
-      combined_monthly += members[user][1]
+      combined_monthly += user[1]
     end
+  elsif
+    # This allows for a single user to make a budget as well.
+    combined_monthly += members[0][1]
   end
-  return combined_monthly
+  combined_monthly
 end
 
 # This calculates the combined annual incomes of the members
 def combined_annual_func(number_of_people, members)
   combined_annual = 0
   if number_of_people > 1
-    (0...number_of_people).each do |user|
+    members.each do |user|
       # This adds the previous value of the "combined_annual" variable to the
       # "annual_income" element of each user's grouping in the array "members"s
-      combined_annual += members[user][2]
+      combined_annual += user[2]
     end
+  elsif
+    # This allows for a single user to make a budget as well.
+    combined_annual += members[0][1]
   end
   return combined_annual
 end
@@ -85,9 +89,6 @@ def member_register_func(user)
   member << member_name
   member << monthly_net_income
   member << annual_income
-
-  # The function outputs the "member" array
-  return member
 end
 
 # This loops the function "member_register_func" for as many members as the user
@@ -102,19 +103,18 @@ def member_register_loop_func(number_of_people)
 
     members << member
   end
-  # This returns the array "members" at the end of the function
-  return members
+  members
 end
 
 # This prints each member's individual income at the start of the budget message
-def individual_incomes_message_func(number_of_people, members)
+def individual_incomes_message_func(members)
   individual_incomes = []
-  (0...number_of_people).each do |user|
-    message =  "\n#{members[user][0]} makes $#{sprintf('%.2f', members[user][1])} per month, and $#{sprintf('%.2f', members[user][2])} per year."
+  members.each do |user|
+    message =  "\n#{user[0]} makes $#{sprintf('%.2f', user[1])} per month, and $#{sprintf('%.2f', user[2])} per year."
 
     individual_incomes << message
   end
-  return individual_incomes
+  individual_incomes
 end
 
 # This writes all of the calculations and member information to a text file
@@ -166,9 +166,9 @@ leftover = combined_monthly - (living + bills + gas + groceries)
 
 # - - - - - - - - - - - - - - - - - PRINTED MESSAGE - - - - - - - - - - - - - - - #
 
-individual_incomes = individual_incomes_message_func(number_of_people, members)
+individual_incomes = individual_incomes_message_func(members)
 
-budget_message = """
+budget_message = <<MSG
 
 Combined, you make $#{sprintf('%.2f', combined_monthly)} per month, and $#{sprintf('%.2f', combined_annual)} per year.
 
@@ -184,7 +184,7 @@ Keep in mind that these estimates are based on averages,
 and provide room for flexibility.
 Also remember to try and stay under budget so that
 you have more left over each month.
-"""
+MSG
 
 
 
