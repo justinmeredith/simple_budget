@@ -52,19 +52,19 @@ def combined_monthly_func(number_of_people, members)
 end
 
 # This calculates the combined annual incomes of the members
-def combined_annual_func(number_of_people, members)
-  combined_annual = 0
+def combined_annually_func(number_of_people, members)
+  combined_annually = 0
   if number_of_people > 1
     members.each do |user|
-      # This adds the previous value of the "combined_annual" variable to the
+      # This adds the previous value of the "combined_annually" variable to the
       # "annual_income" element of each user's hash in the array "members"
-      combined_annual += user[:annual_income]
+      combined_annually += user[:annual_income]
     end
   elsif
     # This allows for a single user to make a budget as well.
-    combined_annual += members[0][:annual_income]
+    combined_annually += members[0][:annual_income]
   end
-  return combined_annual
+  return combined_annually
 end
 
 # This creates a hash for each member that contains their name, monthly income,
@@ -126,9 +126,58 @@ def write_to_output_file_func(number_of_people, individual_incomes, output_budge
   output_budget_text_file.write(budget_message)
 end
 
-# This helps the user set and reach a savings goal
+# This helps the user(s) set and reach a savings goal
 def savings_goal_func
   # This is the code
+end
+
+# This determines each individual member's monthly leftovers and adds it to their
+# hash
+def individual_leftovers_func(members)
+  members.each do |user|
+    # This runs the budget_categories_func on each member using their personal monthly_income
+    budget_categories = budget_categories_func(user[:monthly_income])
+    # This subtracts all the combined categories of a member's budget from their monthly income
+    leftovers = user[:monthly_income] - (budget_categories[:living] + budget_categories[:bills] + budget_categories[:gas] + budget_categories[:groceries])
+    # This stores the variable 'leftovers' in a new hash element for each user
+    user[:leftovers] = leftovers
+  end
+end
+
+# This groups the leftovers element of each member's hash
+def leftovers_func(members)
+  leftovers = 0
+  members.each do |user|
+    leftovers += user[:leftovers]
+  end
+  leftovers
+end
+
+# This takes in a monthly income and calculates the amounts allotted to each
+# category of the budget
+def budget_categories_func(monthly_income)
+
+  # These lines calculate the various categories of the budget. They are
+  # self explanatory. The percentages are averages based on research and
+  # budget advising that can be found on the internet. These can be easily
+  # tweaked without ramifications on the program's ability to run. While each
+  # category skews towards a more conservative spending allowance,
+  # the "monthly_leftovers" variable shows the user their unallocated income,
+  # which can be dispersed through the other categories should the user desire.
+  living = monthly_income * 0.3
+  bills = monthly_income * 0.2
+  gas = monthly_income * 0.2
+  groceries = monthly_income * 0.18
+
+  # This creates a hash containing the calculated categories
+  budget_categories = {}
+  budget_categories[:living] = living
+  budget_categories[:bills] = bills
+  budget_categories[:gas] = gas
+  budget_categories[:groceries] = groceries
+
+  # This returns a hash containing the calculated categories
+  return budget_categories
 end
 
 
@@ -147,26 +196,18 @@ members = member_register_loop_func(number_of_people)
 combined_monthly = combined_monthly_func(number_of_people, members)
 
 # This combines the users' annual incomes and stores them in the variable
-# "combined_annual"
-combined_annual = combined_annual_func(number_of_people, members)
+# "combined_annually"
+combined_annually = combined_annually_func(number_of_people, members)
 
+# This calculates the different categories of the budget for the members as a whole
+budget_categories = budget_categories_func(combined_monthly)
 
+# This calculates each individual member's monthly leftovers
+individual_leftovers_func(members)
 
-# - - - - - - - - - - - - - - - CALCULATIONS - - - - - - - - - - - - - - - - - - #
-
-# These lines calculate the various categories of the budget. They are
-# self explanatory. The percentages are averages based on research and
-# budget advising that can be found on the internet. These can be easily
-# tweaked without ramifications on the program's ability to run. While each
-# category skews towards a more conservative spending allowance,
-# the "monthly_leftovers" variable shows the user their unallocated income,
-# which can be dispersed through the other categories should the user desire.
-
-living = combined_monthly * 0.3
-bills = combined_monthly * 0.2
-gas = combined_monthly * 0.2
-groceries = combined_monthly * 0.18
-leftover = combined_monthly - (living + bills + gas + groceries)
+# This calculates the group's leftovers as a whole and stores them in a variable to be
+# used in the output message
+group_leftovers = leftovers_func(members)
 
 
 
@@ -176,15 +217,15 @@ individual_incomes = individual_incomes_message_func(members)
 
 budget_message = <<MSG
 
-Combined, this household makes $#{sprintf('%.2f', combined_monthly)} per month, and $#{sprintf('%.2f', combined_annual)} per year.
+Combined, this household makes $#{sprintf('%.2f', combined_monthly)} per month, and $#{sprintf('%.2f', combined_annually)} per year.
 
 Here is a break down of your monthly budget:
-  * You can afford a living expense of $#{sprintf('%.2f', living)}.
-  * You can afford $#{sprintf('%.2f', bills)} in bills.
-  * You can afford $#{sprintf('%.2f', gas)} in gas.
-  * You can afford $#{sprintf('%.2f', groceries)} in groceries and food.
+  * You can afford a living expense of $#{sprintf('%.2f', budget_categories[:living])}.
+  * You can afford $#{sprintf('%.2f', budget_categories[:bills])} in bills.
+  * You can afford $#{sprintf('%.2f', budget_categories[:gas])} in gas.
+  * You can afford $#{sprintf('%.2f', budget_categories[:groceries])} in groceries and food.
 
-This leaves you with roughly $#{sprintf('%.2f', leftover)} left over
+This leaves roughly $#{sprintf('%.2f', group_leftovers)} left over
 for spending and saving.
 Keep in mind that these estimates are based on averages,
 and provide room for flexibility.
