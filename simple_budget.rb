@@ -126,12 +126,6 @@ def write_to_output_file_func(number_of_people, individual_incomes, output_budge
   output_budget_text_file.write(budget_message)
 end
 
-# This function helps the user establish a savings goal and a time frame to
-# reach that goal
-def savings_goal_func
-  # Code for helping the user(s) save money will go here
-end
-
 
 
 # - - - - - - - - - - - - - - - RUNNING THE PROGRAM - - - - - - - - - - - - - - - #
