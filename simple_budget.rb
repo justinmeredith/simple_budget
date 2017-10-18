@@ -3,7 +3,7 @@
 
 # All function names end with "_func" to distinguish them from variables.
 # "member" refers to a single individual involved in the budget. Each member
-# is stored as a nested array inside of the array "members"
+# is stored as a nested hash inside of the array "members"
 # "members" refers to the group of individuals as a whole. They are stored
 # in an array called "members".
 # "user" in the context of code is a variable used to reference a nested member,
@@ -19,7 +19,7 @@
 # This clears the terminal screen
 Gem.win_platform? ? (system "cls") : (system "clear")
 
-# TESTING GIT FUNCTIONS
+
 
 # - - - - - - - - - - - - - - - - - FUNCTIONS - - - - - - - - - - - - - - - - - - #
 
@@ -42,11 +42,11 @@ def combined_monthly_func(number_of_people, members)
     members.each do |user|
       # This adds the previous value of the "combined_monthly" variable to the
       # "monthly_net_income" element of each user's grouping in the array "members"
-      combined_monthly += user[1]
+      combined_monthly += user[:monthly_income]
     end
   elsif
     # This allows for a single user to make a budget as well.
-    combined_monthly += members[0][1]
+    combined_monthly += members[0][:monthly_income]
   end
   combined_monthly
 end
@@ -57,20 +57,20 @@ def combined_annual_func(number_of_people, members)
   if number_of_people > 1
     members.each do |user|
       # This adds the previous value of the "combined_annual" variable to the
-      # "annual_income" element of each user's grouping in the array "members"s
-      combined_annual += user[2]
+      # "annual_income" element of each user's hash in the array "members"
+      combined_annual += user[:annual_income]
     end
   elsif
     # This allows for a single user to make a budget as well.
-    combined_annual += members[0][1]
+    combined_annual += members[0][:annual_income]
   end
   return combined_annual
 end
 
-# This creates an array for each member that contains their name, monthly income,
+# This creates a hash for each member that contains their name, monthly income,
 # and annual income
 def member_register_func(user)
-  member = []
+  member = {}
 
   print "\n\nName of budget member ##{user}: "
   member_name = $stdin.gets.chomp
@@ -84,11 +84,12 @@ def member_register_func(user)
   # This calculates the annual income
   annual_income = annual_income_func(monthly_net_income)
 
-  # This adds each of the entered and calculated variables into an array known as
-  # "member". This array is returned at the end of the function
-  member << member_name
-  member << monthly_net_income
-  member << annual_income
+  # This adds each of the entered and calculated variables into a hash known as
+  # "member". This hash is returned at the end of the function
+  member[:name] = member_name
+  member[:monthly_income] = monthly_net_income
+  member[:annual_income] = annual_income
+  return member
 end
 
 # This loops the function "member_register_func" for as many members as the user
@@ -97,11 +98,11 @@ def member_register_loop_func(number_of_people)
   # This creates an empty array called "members"
   members = []
   (1..number_of_people).each do |user|
-    # This runs the "member_register_func" function and stores the output array
+    # This runs the "member_register_func" function and stores the output hash
     # inside the variable "member"
     member = member_register_func(user)
 
-    members << member
+    members.push(member)
   end
   members
 end
@@ -110,7 +111,7 @@ end
 def individual_incomes_message_func(members)
   individual_incomes = []
   members.each do |user|
-    message =  "\n#{user[0]} makes $#{sprintf('%.2f', user[1])} per month, and $#{sprintf('%.2f', user[2])} per year."
+    message =  "\n#{user[:name]} makes $#{sprintf('%.2f', user[:monthly_income])} per month, and $#{sprintf('%.2f', user[:annual_income])} per year."
 
     individual_incomes << message
   end
