@@ -19,7 +19,7 @@
 # This clears the terminal screen
 Gem.win_platform? ? (system "cls") : (system "clear")
 
-
+# TESTING GIT FUNCTIONS
 
 # - - - - - - - - - - - - - - - - - FUNCTIONS - - - - - - - - - - - - - - - - - - #
 
