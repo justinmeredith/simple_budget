@@ -211,3 +211,8 @@ output_budget_text_file.close
 puts "\n\n\nYour budget can be found in the same folder as this program: \n\n#{Dir.pwd}\n\n\n\n"
 
 puts "Thank you for using Simple Budget!\n\n"
+
+# This pauses the program before clearing the screen after the user presses
+# 'Return'
+$stdin.gets.chomp
+Gem.win_platform? ? (system "cls") : (system "clear")
