@@ -119,16 +119,99 @@ def individual_incomes_message_func(members)
 end
 
 # This writes all of the calculations and member information to a text file
-def write_to_output_file_func(number_of_people, individual_incomes, output_budget_text_file, budget_message)
-  (0...number_of_people).each do |user|
+def write_to_output_file_func(number_of_people, individual_incomes, output_budget_text_file, budget_message, savings_goal_message)
+  (0..number_of_people).each do |user|
     output_budget_text_file.write(individual_incomes[user])
   end
+  output_budget_text_file.write(savings_goal_message)
   output_budget_text_file.write(budget_message)
 end
 
+# This creates a savings goal for a single member and stores it in a hash.
+def individual_savings_goal_calculations_func(members, number_of_people, savings_goal)
+  if number_of_people == 1
+    # These calculate various weekly amounts the user can save from their leftovers
+    # automatically to present to the user as preset options for savings and time frames
+    preset_1 = [(members[0][:leftovers] * 0.25), (savings_goal[:amount] / (members[0][:leftovers] * 0.25))]
+    preset_2 = [(members[0][:leftovers] * 0.35), (savings_goal[:amount] / (members[0][:leftovers] * 0.35))]
+    preset_3 = [(members[0][:leftovers] * 0.45), (savings_goal[:amount] / (members[0][:leftovers] * 0.45))]
+
+    # This presents the above calculations to the user and asks them to choose
+    # one of the options.
+    puts "\nHow much would you like to save each week?"
+    puts "  a) Save $#{sprintf('%.2f', preset_1[0])} each week for #{sprintf('%.0f', preset_1[1])} weeks."
+    puts "  b) Save $#{sprintf('%.2f', preset_2[0])} each week for #{sprintf('%.0f', preset_2[1])} weeks."
+    puts "  c) Save $#{sprintf('%.2f', preset_3[0])} each week for #{sprintf('%.0f', preset_3[1])} weeks."
+    puts "  d) Set your own weekly amount."
+    print "> "
+    user_answer = $stdin.gets.chomp
+
+    # These take the user's answer, perform the according function, and store the
+    # printed savings message in a variable.
+    if user_answer == "a"
+      savings_goal_message = savings_goal_message_func(preset_1, savings_goal)
+      return savings_goal_message
+    elsif user_answer == "b"
+      savings_goal_message = savings_goal_message_func(preset_2, savings_goal)
+      return savings_goal_message
+    elsif user_answer == "c"
+      savings_goal_message = savings_goal_message_func(preset_3, savings_goal)
+      return savings_goal_message
+    elsif user_answer == "d"
+      puts "\nYou only have $#{sprintf('%.2f', members[0][:leftovers])} left over each week, so don't try to save more than that each week."
+      print "\nHow much would you like to save each week? $"
+      weekly_savings = $stdin.gets.chomp.to_i
+      savings_goal_calculations = [weekly_savings, savings_goal[:amount] / weekly_savings]
+      savings_goal_message = savings_goal_message_func(savings_goal_calculations, savings_goal)
+      return savings_goal_message
+    end
+    puts savings_goal_message
+    return savings_goal_message
+  end
+  return savings_goal_message
+end
+
+# This creates a savings goal for the group of members and stores it in a hash
+def group_savings_goal_calculations_func(members)
+end
+
+# This creates a message containing the savings goal (if there is one) to be written
+# to the output file later
+def savings_goal_message_func(savings_goal_calculations, savings_goal)
+  savings_goal_message = <<~SAVINGSMESSAGE
+  \nIf you save $#{sprintf('%.2f', savings_goal_calculations[0])}, you will reach your #{savings_goal[:name]} goal in #{sprintf('%.0f', savings_goal_calculations[1])} weeks.
+  Stick to it! You'll be glad you did.
+  SAVINGSMESSAGE
+end
+
 # This helps the user(s) set and reach a savings goal
-def savings_goal_func
-  # This is the code
+def savings_goal_func(members, number_of_people)
+  # These lines register the name and amount of the goal and store it in a hash
+  print "\nWhat would you like to name your goal (ex. New car, vacation, etc.)? "
+  goal_name = $stdin.gets.chomp
+  print "How much money do you need to save to reach this goal? $"
+  goal_amount = $stdin.gets.chomp.to_i
+  savings_goal = {}
+  savings_goal[:name] = goal_name
+  savings_goal[:amount] = goal_amount
+
+  # These lines determine if the goal is shared or individual and runs the
+  # appropriate function
+  if number_of_people == 1
+    individual_savings_goal_calculations_func(members, number_of_people, savings_goal)
+  elsif number_of_people > 1
+    puts "Is this a shared goal between members or an individual goal?"
+    puts "1) All members are working towards this goal."
+    puts "2) This goal belongs to one member of the budget."
+    print "> "
+    user_answer = $stdin.gets.chomp.to_i
+    if user_answer == 1
+      savings_goal_message = individual_savings_goal_calculations_func(members, number_of_people, savings_goal)
+    elsif user_answer == 2
+      # function
+    end
+  end
+  return savings_goal_message
 end
 
 # This determines each individual member's monthly leftovers and adds it to their
@@ -209,13 +292,19 @@ individual_leftovers_func(members)
 # used in the output message
 group_leftovers = leftovers_func(members)
 
+print "\n\nWould you like to set a savings goal (yes/no)? "
+user_answer = $stdin.gets.chomp
+if user_answer == "yes"
+  savings_goal_message = savings_goal_func(members, number_of_people)
+end
+
 
 
 # - - - - - - - - - - - - - - - - - PRINTED MESSAGE - - - - - - - - - - - - - - - #
 
 individual_incomes = individual_incomes_message_func(members)
 
-budget_message = <<MSG
+budget_message = <<~BUDGETMESSAGE
 
 Combined, this household makes $#{sprintf('%.2f', combined_monthly)} per month, and $#{sprintf('%.2f', combined_annually)} per year.
 
@@ -231,7 +320,7 @@ Keep in mind that these estimates are based on averages,
 and provide room for flexibility.
 Also remember to try and stay under budget so that
 you have more left over each month.
-MSG
+BUDGETMESSAGE
 
 
 
@@ -249,7 +338,7 @@ output_file_name = "#{output_file_name}.txt"
 output_budget_text_file = open(output_file_name, 'w')
 
 # This writes to the text file named by the user
-write_to_output_file_func(number_of_people, individual_incomes, output_budget_text_file, budget_message)
+write_to_output_file_func(number_of_people, individual_incomes, output_budget_text_file, budget_message, savings_goal_message)
 
 # This closes the file
 output_budget_text_file.close
