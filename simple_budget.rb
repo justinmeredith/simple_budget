@@ -197,7 +197,7 @@ def savings_goal_func(members, number_of_people)
   print "How much money do you need to save to reach this goal? $"
   goal_amount = $stdin.gets.chomp.to_i
 
-  # This creates a hash that stores the name and amount of the goal
+  # This creates a hash that stores the name and amount of the goal 
   savings_goal = {}
   savings_goal[:name] = goal_name
   savings_goal[:amount] = goal_amount
