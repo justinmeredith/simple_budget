@@ -228,16 +228,18 @@ def individual_savings_goal_calculations_func(members, number_of_people, savings
     # printed savings message in a variable.
     if user_answer == "a"
       savings_goal_message = savings_goal_message_func(preset_1, savings_goal)
+
     elsif user_answer == "b"
       savings_goal_message = savings_goal_message_func(preset_2, savings_goal)
+
     elsif user_answer == "c"
       savings_goal_message = savings_goal_message_func(preset_3, savings_goal)
+      
     elsif user_answer == "d"
-      # This variable is used to end a while loop
-      loop_disrupt = false
-      # This while loop is here so that if the user enters an amount to save monthly greater
-      # Than there leftovers, they can quickly be brought back to this point.
-      while loop_disrupt == false
+      # This while loop is here so that if the user enters an amount to save
+      # monthly greater than there leftovers, they can quickly be brought back to
+      # this point.
+      while true
         puts "\nYou only have $#{sprintf('%.2f', members[0][:leftovers])} left over each month, so don't try to save more than that each month."
         print "\nHow much would you like to save each month? $"
         monthly_savings = $stdin.gets.chomp.to_f
@@ -246,11 +248,13 @@ def individual_savings_goal_calculations_func(members, number_of_people, savings
           puts "\nYou shouldn't set a monthly saving goal that is greater than the amount you have"
           puts "leftover at the end of each month. You can always put more in than you set for"
           puts "your monthly goal, but you should keep the goal realistic."
+
         else
           savings_goal_calculations = [monthly_savings, savings_goal[:amount] / monthly_savings]
           savings_goal_message = savings_goal_message_func(savings_goal_calculations, savings_goal)
-          loop_disrupt = true
+          break
         end
+
       end
     end
   end
