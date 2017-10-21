@@ -12,20 +12,25 @@
 # actually running the program.
 # Comments that look like "# - - - - - - TEXT - - - - - - - #" are used to
 # separate the different groupings of code blocks within the
-# program. They are merely for the sake of easing the process
-# of reading the code.
+# program. They are called 'chapters' and are merely for the sake of easing the
+# process of reading the code.
+# Comments that look like '# ~ ~ ~ ~ TEXT ~ ~ ~ ~ #' are used to further break
+# up the chapters for easier reading. These are called 'subchapters'.
 
 
 # This clears the terminal screen.
 Gem.win_platform? ? (system "cls") : (system "clear")
 
-# This variable is to be used later in the program for functions/code that will only run
-# if there is a savings goal set.
+# This variable is to be used later in the program for functions/code that will
+# only run if there is a savings goal set.
 is_there_a_savings_goal = false
 
 
 
 # - - - - - - - - - - - - - - - - - FUNCTIONS - - - - - - - - - - - - - - - - - - #
+
+
+# ~ ~ ~ ~ CALCULATIONS ~ ~ ~ ~ #
 
 # This calculates a member's monthly income after tax.
 # An estimate of 10% tax is used.
@@ -71,6 +76,58 @@ def combined_annually_func(number_of_people, members)
   return combined_annually
 end
 
+# This determines each individual member's monthly leftovers and adds it to their
+# hash
+def individual_leftovers_func(members)
+  members.each do |user|
+    # This runs the budget_categories_func on each member using their personal monthly_income
+    budget_categories = budget_categories_func(user[:monthly_income])
+    # This subtracts all the combined categories of a member's budget from their monthly income
+    leftovers = user[:monthly_income] - (budget_categories[:living] + budget_categories[:bills] + budget_categories[:gas] + budget_categories[:groceries])
+    # This stores the variable 'leftovers' in a new hash element for each user
+    user[:leftovers] = leftovers
+  end
+end
+
+# This groups the leftovers element of each member's hash
+def leftovers_func(members)
+  leftovers = 0
+  members.each do |user|
+    leftovers += user[:leftovers]
+  end
+  leftovers
+end
+
+# This takes in a monthly income and calculates the amounts allotted to each
+# category of the budget
+def budget_categories_func(monthly_income)
+
+  # These lines calculate the various categories of the budget. They are
+  # self explanatory. The percentages are averages based on research and
+  # budget advising that can be found on the internet. These can be easily
+  # tweaked without ramifications on the program's ability to run. While each
+  # category skews towards a more conservative spending allowance,
+  # the "monthly_leftovers" variable shows the user their unallocated income,
+  # which can be dispersed through the other categories should the user desire.
+  living = monthly_income * 0.3
+  bills = monthly_income * 0.2
+  gas = monthly_income * 0.2
+  groceries = monthly_income * 0.18
+
+  # This creates a hash containing the calculated categories
+  budget_categories = {}
+  budget_categories[:living] = living
+  budget_categories[:bills] = bills
+  budget_categories[:gas] = gas
+  budget_categories[:groceries] = groceries
+
+  # This returns a hash containing the calculated categories
+  return budget_categories
+end
+
+
+# ~ ~ ~ ~ MEMBER REGISTRATION ~ ~ ~ ~ #
+
 # This creates a hash for each member that contains their name, monthly income,
 # and annual income.
 def member_register_func(user)
@@ -111,30 +168,41 @@ def member_register_loop_func(number_of_people)
   members
 end
 
-# This prints each member's individual income at the start of the budget message.
-def individual_incomes_message_func(members)
-  individual_incomes = []
-  members.each do |user|
-    message =  "\n#{user[:name]} makes $#{sprintf('%.2f', user[:monthly_income])} per month, and $#{sprintf('%.2f', user[:annual_income])} per year."
 
-    individual_incomes << message
-  end
-  individual_incomes
-end
+# ~ ~ ~ ~ SAVINGS FEATURE ~ ~ ~ ~ #
 
-# This writes all of the calculations and member information to a text file.
-def write_to_output_file_func(output_file_name, number_of_people, individual_incomes, output_budget_text_file, budget_message, savings_goal_message, is_there_a_savings_goal)
-  output_budget_text_file.write("#{output_file_name}\n\n\n")
-  output_budget_text_file.write("- INCOME -")
-  (0..number_of_people).each do |user|
-    output_budget_text_file.write(individual_incomes[user])
+# This helps the user(s) set and reach a savings goal
+def savings_goal_func(members, number_of_people)
+  # These lines register the name and amount of the goal and store it in a hash
+  print "\nWhat would you like to name your goal (ex. New car, vacation, etc.)? "
+  goal_name = $stdin.gets.chomp
+  print "How much money do you need to save to reach this goal? $"
+  goal_amount = $stdin.gets.chomp.to_i
+
+  # This creates a hash that stores the name and amount of the goal
+  savings_goal = {}
+  savings_goal[:name] = goal_name
+  savings_goal[:amount] = goal_amount
+
+  # These lines determine if the goal is shared or individual and runs the
+  # appropriate function
+  if number_of_people == 1
+    # This runs the individual_savings_goal_calculations_func and stores the answer
+    # in savings_goal_message
+    savings_goal_message = individual_savings_goal_calculations_func(members, number_of_people, savings_goal)
+  elsif number_of_people > 1
+    puts "Is this a shared goal between members or an individual goal?"
+    puts "1) All members are working towards this goal."
+    puts "2) This goal belongs to one member of the budget."
+    print "> "
+    user_answer = $stdin.gets.chomp.to_i
+    if user_answer == 1
+      savings_goal_message = individual_savings_goal_calculations_func(members, number_of_people, savings_goal)
+    elsif user_answer == 2
+      # function
+    end
   end
-  output_budget_text_file.write(budget_message)
-  # This makes sure that the program will not try to write a savings goal message if there
-  # isn't one.
-  if is_there_a_savings_goal == true
-    output_budget_text_file.write(savings_goal_message)
-  end
+  return savings_goal_message
 end
 
 # This creates a savings goal for a single member and stores it in a hash.
@@ -193,6 +261,20 @@ end
 def group_savings_goal_calculations_func(members)
 end
 
+
+# ~ ~ ~ ~ OUTPUT FILE ~ ~ ~ ~ #
+
+# This prints each member's individual income at the start of the budget message.
+def individual_incomes_message_func(members)
+  individual_incomes = []
+  members.each do |user|
+    message =  "\n#{user[:name]} makes $#{sprintf('%.2f', user[:monthly_income])} per month, and $#{sprintf('%.2f', user[:annual_income])} per year."
+
+    individual_incomes << message
+  end
+  individual_incomes
+end
+
 # This creates a message containing the savings goal (if there is one) to be written
 # to the output file later
 def savings_goal_message_func(savings_goal_calculations, savings_goal)
@@ -206,87 +288,19 @@ def savings_goal_message_func(savings_goal_calculations, savings_goal)
   SAVINGSMESSAGE
 end
 
-# This helps the user(s) set and reach a savings goal
-def savings_goal_func(members, number_of_people)
-  # These lines register the name and amount of the goal and store it in a hash
-  print "\nWhat would you like to name your goal (ex. New car, vacation, etc.)? "
-  goal_name = $stdin.gets.chomp
-  print "How much money do you need to save to reach this goal? $"
-  goal_amount = $stdin.gets.chomp.to_i
-
-  # This creates a hash that stores the name and amount of the goal
-  savings_goal = {}
-  savings_goal[:name] = goal_name
-  savings_goal[:amount] = goal_amount
-
-  # These lines determine if the goal is shared or individual and runs the
-  # appropriate function
-  if number_of_people == 1
-    # This runs the individual_savings_goal_calculations_func and stores the answer
-    # in savings_goal_message
-    savings_goal_message = individual_savings_goal_calculations_func(members, number_of_people, savings_goal)
-  elsif number_of_people > 1
-    puts "Is this a shared goal between members or an individual goal?"
-    puts "1) All members are working towards this goal."
-    puts "2) This goal belongs to one member of the budget."
-    print "> "
-    user_answer = $stdin.gets.chomp.to_i
-    if user_answer == 1
-      savings_goal_message = individual_savings_goal_calculations_func(members, number_of_people, savings_goal)
-    elsif user_answer == 2
-      # function
-    end
+# This writes all of the calculations and member information to a text file.
+def write_to_output_file_func(output_file_name, number_of_people, individual_incomes, output_budget_text_file, budget_message, savings_goal_message, is_there_a_savings_goal)
+  output_budget_text_file.write("#{output_file_name}\n\n\n")
+  output_budget_text_file.write("- INCOME -")
+  (0..number_of_people).each do |user|
+    output_budget_text_file.write(individual_incomes[user])
   end
-  return savings_goal_message
-end
-
-# This determines each individual member's monthly leftovers and adds it to their
-# hash
-def individual_leftovers_func(members)
-  members.each do |user|
-    # This runs the budget_categories_func on each member using their personal monthly_income
-    budget_categories = budget_categories_func(user[:monthly_income])
-    # This subtracts all the combined categories of a member's budget from their monthly income
-    leftovers = user[:monthly_income] - (budget_categories[:living] + budget_categories[:bills] + budget_categories[:gas] + budget_categories[:groceries])
-    # This stores the variable 'leftovers' in a new hash element for each user
-    user[:leftovers] = leftovers
+  output_budget_text_file.write(budget_message)
+  # This makes sure that the program will not try to write a savings goal message if there
+  # isn't one.
+  if is_there_a_savings_goal == true
+    output_budget_text_file.write(savings_goal_message)
   end
-end
-
-# This groups the leftovers element of each member's hash
-def leftovers_func(members)
-  leftovers = 0
-  members.each do |user|
-    leftovers += user[:leftovers]
-  end
-  leftovers
-end
-
-# This takes in a monthly income and calculates the amounts allotted to each
-# category of the budget
-def budget_categories_func(monthly_income)
-
-  # These lines calculate the various categories of the budget. They are
-  # self explanatory. The percentages are averages based on research and
-  # budget advising that can be found on the internet. These can be easily
-  # tweaked without ramifications on the program's ability to run. While each
-  # category skews towards a more conservative spending allowance,
-  # the "monthly_leftovers" variable shows the user their unallocated income,
-  # which can be dispersed through the other categories should the user desire.
-  living = monthly_income * 0.3
-  bills = monthly_income * 0.2
-  gas = monthly_income * 0.2
-  groceries = monthly_income * 0.18
-
-  # This creates a hash containing the calculated categories
-  budget_categories = {}
-  budget_categories[:living] = living
-  budget_categories[:bills] = bills
-  budget_categories[:gas] = gas
-  budget_categories[:groceries] = groceries
-
-  # This returns a hash containing the calculated categories
-  return budget_categories
 end
 
 
