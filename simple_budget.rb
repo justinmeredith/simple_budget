@@ -16,32 +16,36 @@
 # of reading the code.
 
 
-# This clears the terminal screen
+# This clears the terminal screen.
 Gem.win_platform? ? (system "cls") : (system "clear")
+
+# This variable is to be used later in the program for functions/code that will only run
+# if there is a savings goal set.
+is_there_a_savings_goal = false
 
 
 
 # - - - - - - - - - - - - - - - - - FUNCTIONS - - - - - - - - - - - - - - - - - - #
 
-# This calculates a member's monthly income after tax
-# An estimate of 10% tax is used
+# This calculates a member's monthly income after tax.
+# An estimate of 10% tax is used.
 def monthly_income_func(hourly_pay, hours_worked)
   monthly_gross_income = hourly_pay * hours_worked * 4
   monthly_gross_income - (monthly_gross_income * 0.10)
 end
 
-# This calculates a member's annual income
+# This calculates a member's annual income.
 def annual_income_func(monthly_net_income)
   monthly_net_income * 12
 end
 
-# This calculates the combined monthly incomes of the members
+# This calculates the combined monthly incomes of the members.
 def combined_monthly_func(number_of_people, members)
   combined_monthly = 0
   if number_of_people > 1
     members.each do |user|
       # This adds the previous value of the "combined_monthly" variable to the
-      # "monthly_net_income" element of each user's grouping in the array "members"
+      # "monthly_net_income" element of each user's grouping in the array "members".
       combined_monthly += user[:monthly_income]
     end
   elsif
@@ -51,13 +55,13 @@ def combined_monthly_func(number_of_people, members)
   combined_monthly
 end
 
-# This calculates the combined annual incomes of the members
+# This calculates the combined annual incomes of the members.
 def combined_annually_func(number_of_people, members)
   combined_annually = 0
   if number_of_people > 1
     members.each do |user|
       # This adds the previous value of the "combined_annually" variable to the
-      # "annual_income" element of each user's hash in the array "members"
+      # "annual_income" element of each user's hash in the array "members".
       combined_annually += user[:annual_income]
     end
   elsif
@@ -68,7 +72,7 @@ def combined_annually_func(number_of_people, members)
 end
 
 # This creates a hash for each member that contains their name, monthly income,
-# and annual income
+# and annual income.
 def member_register_func(user)
   member = {}
 
@@ -79,13 +83,13 @@ def member_register_func(user)
   print "How many hours a week does #{member_name} work? "
   hours_worked = $stdin.gets.chomp.to_i
 
-  # This calculates the monthly net income
+  # This calculates the monthly net income.
   monthly_net_income = monthly_income_func(hourly_pay, hours_worked)
-  # This calculates the annual income
+  # This calculates the annual income.
   annual_income = annual_income_func(monthly_net_income)
 
   # This adds each of the entered and calculated variables into a hash known as
-  # "member". This hash is returned at the end of the function
+  # "member". This hash is returned at the end of the function.
   member[:name] = member_name
   member[:monthly_income] = monthly_net_income
   member[:annual_income] = annual_income
@@ -93,13 +97,13 @@ def member_register_func(user)
 end
 
 # This loops the function "member_register_func" for as many members as the user
-# specifies
+# specifies.
 def member_register_loop_func(number_of_people)
-  # This creates an empty array called "members"
+  # This creates an empty array called "members".
   members = []
   (1..number_of_people).each do |user|
     # This runs the "member_register_func" function and stores the output hash
-    # inside the variable "member"
+    # inside the variable "member".
     member = member_register_func(user)
 
     members.push(member)
@@ -107,7 +111,7 @@ def member_register_loop_func(number_of_people)
   members
 end
 
-# This prints each member's individual income at the start of the budget message
+# This prints each member's individual income at the start of the budget message.
 def individual_incomes_message_func(members)
   individual_incomes = []
   members.each do |user|
@@ -118,33 +122,37 @@ def individual_incomes_message_func(members)
   individual_incomes
 end
 
-# This writes all of the calculations and member information to a text file
-def write_to_output_file_func(output_file_name, number_of_people, individual_incomes, output_budget_text_file, budget_message, savings_goal_message)
+# This writes all of the calculations and member information to a text file.
+def write_to_output_file_func(output_file_name, number_of_people, individual_incomes, output_budget_text_file, budget_message, savings_goal_message, is_there_a_savings_goal)
   output_budget_text_file.write("#{output_file_name}\n\n\n")
   output_budget_text_file.write("- INCOME -")
   (0..number_of_people).each do |user|
     output_budget_text_file.write(individual_incomes[user])
   end
   output_budget_text_file.write(budget_message)
-  output_budget_text_file.write(savings_goal_message)
+  # This makes sure that the program will not try to write a savings goal message if there
+  # isn't one.
+  if is_there_a_savings_goal == true
+    output_budget_text_file.write(savings_goal_message)
+  end
 end
 
 # This creates a savings goal for a single member and stores it in a hash.
 def individual_savings_goal_calculations_func(members, number_of_people, savings_goal)
   if number_of_people == 1
-    # These calculate various weekly amounts the user can save from their leftovers
-    # automatically to present to the user as preset options for savings and time frames
-    preset_1 = [(members[0][:leftovers] * 0.25), (savings_goal[:amount] / (members[0][:leftovers] * 0.25))]
-    preset_2 = [(members[0][:leftovers] * 0.35), (savings_goal[:amount] / (members[0][:leftovers] * 0.35))]
-    preset_3 = [(members[0][:leftovers] * 0.45), (savings_goal[:amount] / (members[0][:leftovers] * 0.45))]
+    # These calculate various monthly amounts the user can save from their leftovers
+    # automatically to present to the user as preset options for savings and time frames.
+    preset_1 = [(members[0][:leftovers] * 0.45), (savings_goal[:amount] / (members[0][:leftovers] * 0.45))]
+    preset_2 = [(members[0][:leftovers] * 0.55), (savings_goal[:amount] / (members[0][:leftovers] * 0.55))]
+    preset_3 = [(members[0][:leftovers] * 0.75), (savings_goal[:amount] / (members[0][:leftovers] * 0.75))]
 
     # This presents the above calculations to the user and asks them to choose
     # one of the options.
-    puts "\nHow much would you like to save each week?"
-    puts "  a) Save $#{sprintf('%.2f', preset_1[0])} each week for #{sprintf('%.0f', preset_1[1])} weeks."
-    puts "  b) Save $#{sprintf('%.2f', preset_2[0])} each week for #{sprintf('%.0f', preset_2[1])} weeks."
-    puts "  c) Save $#{sprintf('%.2f', preset_3[0])} each week for #{sprintf('%.0f', preset_3[1])} weeks."
-    puts "  d) Set your own weekly amount."
+    puts "\nHow much would you like to save each month?"
+    puts "  a) Save $#{sprintf('%.2f', preset_1[0])} each month for #{sprintf('%.0f', preset_1[1])} months."
+    puts "  b) Save $#{sprintf('%.2f', preset_2[0])} each month for #{sprintf('%.0f', preset_2[1])} months."
+    puts "  c) Save $#{sprintf('%.2f', preset_3[0])} each month for #{sprintf('%.0f', preset_3[1])} months."
+    puts "  d) Set your own monthly amount."
     print "> "
     user_answer = $stdin.gets.chomp
 
@@ -152,24 +160,33 @@ def individual_savings_goal_calculations_func(members, number_of_people, savings
     # printed savings message in a variable.
     if user_answer == "a"
       savings_goal_message = savings_goal_message_func(preset_1, savings_goal)
-      return savings_goal_message
     elsif user_answer == "b"
       savings_goal_message = savings_goal_message_func(preset_2, savings_goal)
-      return savings_goal_message
     elsif user_answer == "c"
       savings_goal_message = savings_goal_message_func(preset_3, savings_goal)
-      return savings_goal_message
     elsif user_answer == "d"
-      puts "\nYou only have $#{sprintf('%.2f', members[0][:leftovers])} left over each week, so don't try to save more than that each week."
-      print "\nHow much would you like to save each week? $"
-      weekly_savings = $stdin.gets.chomp.to_i
-      savings_goal_calculations = [weekly_savings, savings_goal[:amount] / weekly_savings]
-      savings_goal_message = savings_goal_message_func(savings_goal_calculations, savings_goal)
-      return savings_goal_message
+      # This variable is used to end a while loop
+      loop_disrupt = false
+      # This while loop is here so that if the user enters an amount to save monthly greater
+      # Than there leftovers, they can quickly be brought back to this point.
+      while loop_disrupt == false
+        puts "\nYou only have $#{sprintf('%.2f', members[0][:leftovers])} left over each month, so don't try to save more than that each month."
+        print "\nHow much would you like to save each month? $"
+        monthly_savings = $stdin.gets.chomp.to_f
+
+        if monthly_savings > members[0][:leftovers]
+          puts "\nYou shouldn't set a monthly saving goal that is greater than the amount you have"
+          puts "leftover at the end of each month. You can always put more in than you set for"
+          puts "your monthly goal, but you should keep the goal realistic."
+        else
+          savings_goal_calculations = [monthly_savings, savings_goal[:amount] / monthly_savings]
+          savings_goal_message = savings_goal_message_func(savings_goal_calculations, savings_goal)
+          loop_disrupt = true
+        end
+      end
     end
-    return savings_goal_message
   end
-  return savings_goal_message
+  savings_goal_message
 end
 
 # This creates a savings goal for the group of members and stores it in a hash
@@ -183,8 +200,8 @@ def savings_goal_message_func(savings_goal_calculations, savings_goal)
 
 
   - SAVINGS GOAL -
-  If you save $#{sprintf('%.2f', savings_goal_calculations[0])} each week,
-  you will reach your #{savings_goal[:name]} goal in #{sprintf('%.0f', savings_goal_calculations[1])} weeks.
+  If you save $#{sprintf('%.2f', savings_goal_calculations[0])} each month,
+  you will reach your #{savings_goal[:name]} goal in #{sprintf('%.0f', savings_goal_calculations[1])} months.
   Stick to it! You'll be glad you did.
   SAVINGSMESSAGE
 end
@@ -197,7 +214,7 @@ def savings_goal_func(members, number_of_people)
   print "How much money do you need to save to reach this goal? $"
   goal_amount = $stdin.gets.chomp.to_i
 
-  # This creates a hash that stores the name and amount of the goal 
+  # This creates a hash that stores the name and amount of the goal
   savings_goal = {}
   savings_goal[:name] = goal_name
   savings_goal[:amount] = goal_amount
@@ -305,8 +322,9 @@ print "\n\nWould you like to set a savings goal (yes/no)? "
 # If the user answers yes, savings goal function runs and returns the
 # savings_goal_message from the savings goal message function.
 user_answer = $stdin.gets.chomp
-if user_answer == "yes" || "Yes" || "y" || "Y"
+if user_answer == "yes" || user_answer == "y"
   savings_goal_message = savings_goal_func(members, number_of_people)
+  is_there_a_savings_goal = true
 end
 
 
@@ -351,7 +369,7 @@ output_file_name_extended = "#{output_file_name}.txt"
 output_budget_text_file = open(output_file_name_extended, 'w')
 
 # This writes to the text file named by the user
-write_to_output_file_func(output_file_name, number_of_people, individual_incomes, output_budget_text_file, budget_message, savings_goal_message)
+write_to_output_file_func(output_file_name, number_of_people, individual_incomes, output_budget_text_file, budget_message, savings_goal_message, is_there_a_savings_goal)
 
 # This closes the file
 output_budget_text_file.close
