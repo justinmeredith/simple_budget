@@ -23,6 +23,9 @@
 # This clears the terminal screen.
 Gem.win_platform? ? (system "cls") : (system "clear")
 
+# Making module accessible
+require "./functions.rb"
+
 # This variable is to be used later in the program for functions/code that will
 # only run if there is a savings goal set.
 is_there_a_savings_goal = false
@@ -252,7 +255,7 @@ print "\n\nWould you like to set a savings goal (yes/no)? "
 # savings_goal_message from the savings goal message function.
 user_answer = $stdin.gets.chomp
 if user_answer == "yes" || user_answer == "y"
-  savings_goal_message = savings_goal_func(members, number_of_people)
+  savings_goal_message = SavingsGoal.savings_goal_func(members, number_of_people)
   is_there_a_savings_goal = true
 end
 
