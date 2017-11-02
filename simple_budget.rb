@@ -23,8 +23,9 @@
 # This clears the terminal screen.
 Gem.win_platform? ? (system "cls") : (system "clear")
 
-# Making module accessible
+# Makes the savings goal feature and various functions accesible
 require "./functions"
+require "./savings_goal"
 
 # This variable is to be used later in the program for functions/code that will
 # only run if there is a savings goal set.
