@@ -1,24 +1,27 @@
-# Simple_Budget.rb
+=begin
 
-# This program calculates what someone/s make per month, per year,
-# and what they can afford to pay monthly for a living space
+#Simple_Budget.rb
 
-# All function names end with "_func" to distinguish them from variables.
-# "member" refers to a single individual involved in the budget. Each member
-# is stored as a nested hash inside of the array "members"
-# "members" refers to the group of individuals as a whole. They are stored
-# in an array called "members".
-# "user" in the context of code is a variable used to reference a nested member,
-# i.e. "user = 1" would be referencing the second member of the budget.
-# "user" in the context of comments and meta is referring to the person
-# actually running the program.
-# Comments that look like "# - - - - - - TEXT - - - - - - - #" are used to
-# separate the different groupings of code blocks within the
-# program. They are called 'chapters' and are merely for the sake of easing the
-# process of reading the code.
-# Comments that look like '# ~ ~ ~ ~ TEXT ~ ~ ~ ~ #' are used to further break
-# up the chapters for easier reading. These are called 'subchapters'.
+This program calculates what someone/s make per month, per year,
+and what they can afford to pay monthly for a living space
 
+All function names end with "_func" to distinguish them from variables.
+"member" refers to a single individual involved in the budget. Each member
+is stored as a nested hash inside of the array "members"
+"members" refers to the group of individuals as a whole. They are stored
+in an array called "members".
+"user" in the context of code is a variable used to reference a nested member,
+i.e. "user = 1" would be referencing the second member of the budget.
+"user" in the context of comments and meta is referring to the person
+actually running the program.
+Comments that look like "# - - - - - - TEXT - - - - - - - #" are used to
+separate the different groupings of code blocks within the
+program. They are called 'chapters' and are merely for the sake of easing the
+process of reading the code.
+Comments that look like '# ~ ~ ~ ~ TEXT ~ ~ ~ ~ #' are used to further break
+up the chapters for easier reading. These are called 'subchapters'.
+
+=end
 
 # This clears the terminal screen.
 Gem.win_platform? ? (system "cls") : (system "clear")
