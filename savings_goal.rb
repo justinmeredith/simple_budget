@@ -1,4 +1,4 @@
-#Savings_Goal
+#Savings_Goal.rb
 
 
 # This helps the user set a savings goal.
