@@ -2,127 +2,168 @@
 
 #Simple_Budget.rb
 
-This program calculates what someone/s make per month, per year,
-and what they can afford to pay monthly for a living space
-
-All function names end with "_func" to distinguish them from variables.
-"member" refers to a single individual involved in the budget. Each member
-is stored as a nested hash inside of the array "members"
-"members" refers to the group of individuals as a whole. They are stored
-in an array called "members".
-"user" in the context of code is a variable used to reference a nested member,
-i.e. "user = 1" would be referencing the second member of the budget.
-"user" in the context of comments and meta is referring to the person
-actually running the program.
-Comments that look like "# - - - - - - TEXT - - - - - - - #" are used to
-separate the different groupings of code blocks within the
-program. They are called 'chapters' and are merely for the sake of easing the
-process of reading the code.
-Comments that look like '# ~ ~ ~ ~ TEXT ~ ~ ~ ~ #' are used to further break
-up the chapters for easier reading. These are called 'subchapters'.
+This program calculates what someone/s make per month and year,
+and generates a budget based on this information
 
 =end
 
 # This clears the terminal screen.
 Gem.win_platform? ? (system "cls") : (system "clear")
 
-# Makes the savings goal feature and various functions accesible
-require "./functions"
-require "./savings_goal"
 
-# This variable is to be used later in the program for functions/code that will
-# only run if there is a savings goal set.
-is_there_a_savings_goal = false
+# ~   ~   ~   ~   ~   ~   CLASSES    ~   ~   ~   ~   ~   ~ #
+class Member
+  attr_reader :name, :monthly_income, :annual_income, :living, :bills, :gas, :groceries, :leftovers, :savings_goal
 
+  def initialize(name, hourly_pay, hours_worked_weekly)
+    @name = name
+    @hourly_pay = hourly_pay.to_f
+    @hours_worked_weekly = hours_worked_weekly.to_f
+    monthly_income_func(@hourly_pay, @hours_worked_weekly)
+    annual_income_func(@monthly_income)
+    budget(@monthly_income)
+    @savings_goal = String.new
+  end
 
+  def monthly_income_func(hourly_pay, hours_worked_weekly)
+    @monthly_income = hourly_pay * hours_worked_weekly * 4
+  end
 
-# - - - - - - - - - - - - - - - RUNNING THE PROGRAM - - - - - - - - - - - - - - - #
+  def annual_income_func(monthly_income)
+    @annual_income = monthly_income * 12
+  end
 
-print "How many people is this budget for? "
-number_of_people = $stdin.gets.chomp.to_i
+  def budget(monthly_income)
+    @living = monthly_income * 0.3
+    @bills = monthly_income * 0.2
+    @gas = monthly_income * 0.2
+    @groceries = monthly_income * 0.18
+    @leftovers = monthly_income - (@living + @bills + @gas + @groceries)
+  end
 
-# This runs the function "member_register_loop_func" for the amount of people the
-# user specifies above and stores the output in the variable "members"
-members = member_register_loop_func(number_of_people)
+  def savings_goal_func
+    puts "\n#{name}'s Goal"
+    print "   Goal Name (laptop, vacation, etc.): "
+    goal_name = gets.chomp
+    print "   Goal's Cost: $"
+    goal_amount = gets.chomp.to_i
+    puts "\n   *You have roughly $#{sprintf('%.2f', leftovers)} leftover each month. \n   It is recommended that you do not try to save more than this each month.*\n"
+    print "\n   Amount You Plan to Save Monthly: $"
+    savings_per_month = gets.chomp.to_i
+    goal_timeframe = goal_amount.to_f / savings_per_month
 
-# This combines the users' monthly incomes and stores it in the variable
-# "combined_monthly"
-combined_monthly = combined_monthly_func(number_of_people, members)
+    if goal_timeframe > 1
+      month = "months"
+    else
+      month = "month"
+    end
 
-# This combines the users' annual incomes and stores them in the variable
-# "combined_annually"
-combined_annually = combined_annually_func(number_of_people, members)
+    if @savings_goal == ""
+      @savings_goal = "\n\n#{name}'s Goal"
+    end
+    @savings_goal += "\nIf you save up $#{savings_per_month} each month for your #{goal_name} goal, you will reach this goal in #{sprintf('%.1f', goal_timeframe)} #{month}."
+  end
+end
 
-# This calculates the different categories of the budget for the members as a whole
-budget_categories = budget_categories_func(combined_monthly)
+class Budget
+  attr_reader :living, :bills, :gas, :groceries, :leftovers, :monthly_income, :annual_income
 
-# This calculates each individual member's monthly leftovers
-individual_leftovers_func(members)
-
-# This calculates the group's leftovers as a whole and stores them in a variable to be
-# used in the output message
-group_leftovers = leftovers_func(members)
-
-print "\n\nWould you like to set a savings goal (yes/no)? "
-# If the user answers yes, savings goal function runs and returns the
-# savings_goal_message from the savings goal message function.
-user_answer = $stdin.gets.chomp
-if user_answer == "yes" || user_answer == "y"
-  savings_goal_message = savings_goal_func(members, number_of_people)
-  is_there_a_savings_goal = true
+  def initialize(members)
+    @living = 0
+    @bills = 0
+    @gas = 0
+    @groceries = 0
+    @leftovers = 0
+    @monthly_income = 0
+    @annual_income = 0
+    members.each do |key, value|
+      @living += value.living
+      @bills += value.bills
+      @gas += value.gas
+      @groceries += value.groceries
+      @leftovers += value.leftovers
+      @monthly_income += value.monthly_income
+      @annual_income += value.annual_income
+    end
+  end
 end
 
 
+# ~   ~   ~   ~   ~   ~   MEMBERS    ~   ~   ~   ~   ~   ~ #
+puts "How many people is this budget for?"
+people = gets.chomp.to_i
+members = Hash.new
+message = String.new
 
-# - - - - - - - - - - - - - - - - - PRINTED MESSAGE - - - - - - - - - - - - - - - #
+(1..people).each do |x|
+  puts "\n\nMember ##{x}"
+  print "   Name: "
+  name = gets.chomp
+  print "   Hourly Pay: $"
+  hourly_pay = gets.chomp
+  print "   Hours Worked Each Week: "
+  hours_worked_weekly = gets.chomp
 
-individual_incomes = individual_incomes_message_func(members)
+  members[name] = Member.new(name, hourly_pay, hours_worked_weekly)
+end
 
-budget_message = <<~BUDGETMESSAGE
-
-Combined, this household makes $#{sprintf('%.2f', combined_monthly)} per month, and $#{sprintf('%.2f', combined_annually)} per year.
+budget = Budget.new(members)
 
 
+# ~   ~   ~   ~   ~   ~   SAVINGS    ~   ~   ~   ~   ~   ~ #
+puts "\n\nWould you like to create a savings goal? (y/n)"
+answer = gets.chomp.downcase
+while answer.include?("y")
+  puts "\nWhich member would you like to create the goal for?"
+  members.each do |key, value|
+    puts "   * #{key}"
+  end
+  print "   "
+  answer = gets.chomp
+  members[answer].savings_goal_func
+  puts "Would you like to create another savings goal? (y/n)"
+  answer = gets.chomp.downcase
+end
+
+
+# ~   ~   ~   ~   ~   ~   WRITING    ~   ~   ~   ~   ~   ~ #
+puts "\n\nWhat would you like to call this budget?"
+title = gets.chomp
+
+message = " ~ ~ ~ " + title + " ~ ~ ~\n\n\n"
+message += "~ INCOME~ \n"
+
+members.each do |key, value|
+  message += "#{key} makes $#{sprintf('%.2f', value.monthly_income)} per month, and $#{sprintf('%.2f', value.annual_income)} per year.\n"
+end
+
+if members.length > 1
+  message += "Combined, these members make $#{sprintf('%.2f', budget.monthly_income)} per month and $#{sprintf('%.2f', budget.annual_income)}.\n\n"
+end
+
+message += <<~MESSAGE
 ~ BUDGET ~
-Here is a break down of your monthly budget:
-  * You can afford a living expense of $#{sprintf('%.2f', budget_categories[:living])}.
-  * You can afford $#{sprintf('%.2f', budget_categories[:bills])} in bills.
-  * You can afford $#{sprintf('%.2f', budget_categories[:gas])} in gas.
-  * You can afford $#{sprintf('%.2f', budget_categories[:groceries])} in groceries and food.
+Here is a breakdown of your monthly budget:
+     * Living/Rent: $#{sprintf('%.2f', budget.living)}
+     * Bills/Insurance: $#{sprintf('%.2f', budget.bills)}
+     * Gas: $#{sprintf('%.2f', budget.gas)}
+     * Groceries/Food: $#{sprintf('%.2f', budget.groceries)}
 
-This leaves roughly $#{sprintf('%.2f', group_leftovers)} left over for spending and saving.
-Keep in mind that these estimates are based on averages,
-and provide room for flexibility.
-Also remember to try and stay under budget so that
-you have more left over each month.
-BUDGETMESSAGE
+This leaves roughly $#{sprintf('%.2f', budget.leftovers)} leftover each month for shopping and saving.
+MESSAGE
 
-
-
-# - - - - - - - - - - - - - - - - - - FILE WRITING - - - - - - - - - - - - - - - #
-
-# This line allows the user to name their output budget file
-print "\n\nWhat would you like to name your budget? "
-output_file_name = $stdin.gets.chomp
-
-# This ensures the file is a text file
-output_file_name_extended = "#{output_file_name}.txt"
-
-# This creates the file with the name provided by the user and opens it in write
-# mode.
-output_budget_text_file = open(output_file_name_extended, 'w')
-
-# This writes to the text file named by the user
-write_to_output_file_func(output_file_name, number_of_people, individual_incomes, output_budget_text_file, budget_message, savings_goal_message, is_there_a_savings_goal)
-
-# This closes the file
-output_budget_text_file.close
+title += ".txt"
+file = open(title, 'w')
+file.write(message)
+members.each do |key, value|
+  file.write(value.savings_goal)
+end
+file.close
 
 puts "\n\n\nYour budget can be found in the same folder as this program: \n\n#{Dir.pwd}\n\n\n\n"
 
-puts "Thank you for using Simple Budget!\n\n"
 
-# This pauses the program before clearing the screen after the user presses
-# 'Return'
+# ~   ~   ~   ~   ~   ~   END    ~   ~   ~   ~   ~   ~ #
+# This pauses the program before clearing the screen after the user presses 'Return'
 $stdin.gets.chomp
 Gem.win_platform? ? (system "cls") : (system "clear")
