@@ -3,7 +3,7 @@
 #Simple_Budget.rb
 
 This program calculates what someone/s make per month and year,
-and generates a budget based on this information
+and generates a budget based on this information.
 
 =end
 
