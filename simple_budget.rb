@@ -13,35 +13,68 @@ Gem.win_platform? ? (system "cls") : (system "clear")
 
 # ~   ~   ~   ~   ~   ~   CLASSES    ~   ~   ~   ~   ~   ~ #
 class Member
-  attr_reader :name, :monthly_income, :annual_income, :living, :bills, :gas, :groceries, :leftovers, :savings_goal
+  attr_reader :name, :monthly_income, :annual_income, :savings_goal, :budget
 
   def initialize(name, hourly_pay, hours_worked_weekly)
     @name = name
-    @hourly_pay = hourly_pay.to_f
-    @hours_worked_weekly = hours_worked_weekly.to_f
-    monthly_income_func(@hourly_pay, @hours_worked_weekly)
-    annual_income_func(@monthly_income)
-    budget(@monthly_income)
-    @savings_goal = String.new
+    @monthly_income = hourly_pay.to_f * hours_worked_weekly.to_f * 4
+    @annual_income = monthly_income.to_f * 12
+    @budget = IndividualBudget.new(@monthly_income)
+    #@savings_goal = nil
   end
 
-  def monthly_income_func(hourly_pay, hours_worked_weekly)
-    @monthly_income = hourly_pay * hours_worked_weekly * 4
+  def create_goal
+    @savings_goal = SavingsGoal.new(name)
   end
 
-  def annual_income_func(monthly_income)
-    @annual_income = monthly_income * 12
+  def set_goal
+    savings_goal.write_message(savings_goal.message, name, budget.leftovers)
   end
+end
 
-  def budget(monthly_income)
+class IndividualBudget
+  attr_reader :living, :bills, :gas, :groceries, :leftovers
+
+  def initialize(monthly_income)
     @living = monthly_income * 0.3
     @bills = monthly_income * 0.2
     @gas = monthly_income * 0.2
     @groceries = monthly_income * 0.18
     @leftovers = monthly_income - (@living + @bills + @gas + @groceries)
   end
+end
 
-  def savings_goal_func
+class CollectiveBudget
+  attr_reader :living, :bills, :gas, :groceries, :leftovers, :monthly_income, :annual_income
+
+  def initialize(members)
+    @living = 0
+    @bills = 0
+    @gas = 0
+    @groceries = 0
+    @leftovers = 0
+    @monthly_income = 0
+    @annual_income = 0
+    members.each do |key, value|
+      @living += value.budget.living
+      @bills += value.budget.bills
+      @gas += value.budget.gas
+      @groceries += value.budget.groceries
+      @leftovers += value.budget.leftovers
+      @monthly_income += value.monthly_income
+      @annual_income += value.annual_income
+    end
+  end
+end
+
+class SavingsGoal
+  attr_reader :message
+
+  def initialize(name)
+      @message = "\n\n#{name}'s Goals"
+  end
+
+  def write_message(message, name, leftovers)
     puts "\n#{name}'s Goal"
     print "   Goal Name (laptop, vacation, etc.): "
     goal_name = gets.chomp
@@ -58,38 +91,13 @@ class Member
       month = "month"
     end
 
-    if @savings_goal == ""
-      @savings_goal = "\n\n#{name}'s Goal"
-    end
-    @savings_goal += "\nIf you save up $#{savings_per_month} each month for your #{goal_name} goal, you will reach this goal in #{sprintf('%.1f', goal_timeframe)} #{month}."
-  end
-end
-
-class Budget
-  attr_reader :living, :bills, :gas, :groceries, :leftovers, :monthly_income, :annual_income
-
-  def initialize(members)
-    @living = 0
-    @bills = 0
-    @gas = 0
-    @groceries = 0
-    @leftovers = 0
-    @monthly_income = 0
-    @annual_income = 0
-    members.each do |key, value|
-      @living += value.living
-      @bills += value.bills
-      @gas += value.gas
-      @groceries += value.groceries
-      @leftovers += value.leftovers
-      @monthly_income += value.monthly_income
-      @annual_income += value.annual_income
-    end
+    @message += "\nIf you save up $#{savings_per_month} each month for your #{goal_name} goal, you will reach this goal in #{sprintf('%.1f', goal_timeframe)} #{month}."
   end
 end
 
 
 # ~   ~   ~   ~   ~   ~   MEMBERS    ~   ~   ~   ~   ~   ~ #
+puts "Simple Budget\n\n"
 puts "How many people is this budget for?"
 people = gets.chomp.to_i
 members = Hash.new
@@ -107,21 +115,24 @@ message = String.new
   members[name] = Member.new(name, hourly_pay, hours_worked_weekly)
 end
 
-budget = Budget.new(members)
+collective_budget = CollectiveBudget.new(members)
 
 
 # ~   ~   ~   ~   ~   ~   SAVINGS    ~   ~   ~   ~   ~   ~ #
-puts "\n\nWould you like to create a savings goal? (y/n)"
+puts "\n\nWould you like to create a savings goal?"
 answer = gets.chomp.downcase
 while answer.include?("y")
   puts "\nWhich member would you like to create the goal for?"
   members.each do |key, value|
     puts "   * #{key}"
   end
-  print "   "
+  print "      > "
   answer = gets.chomp
-  members[answer].savings_goal_func
-  puts "Would you like to create another savings goal? (y/n)"
+  if members[answer].savings_goal == nil
+    members[answer].create_goal
+  end
+  members[answer].set_goal
+  puts "\n\nWould you like to create another savings goal? (y/n)"
   answer = gets.chomp.downcase
 end
 
@@ -138,25 +149,25 @@ members.each do |key, value|
 end
 
 if members.length > 1
-  message += "Combined, these members make $#{sprintf('%.2f', budget.monthly_income)} per month and $#{sprintf('%.2f', budget.annual_income)}.\n\n"
+  message += "Combined, these members make $#{sprintf('%.2f', collective_budget.monthly_income)} per month and $#{sprintf('%.2f', collective_budget.annual_income)}.\n\n"
 end
 
 message += <<~MESSAGE
 ~ BUDGET ~
 Here is a breakdown of your monthly budget:
-     * Living/Rent: $#{sprintf('%.2f', budget.living)}
-     * Bills/Insurance: $#{sprintf('%.2f', budget.bills)}
-     * Gas: $#{sprintf('%.2f', budget.gas)}
-     * Groceries/Food: $#{sprintf('%.2f', budget.groceries)}
+     * Living/Rent: $#{sprintf('%.2f', collective_budget.living)}
+     * Bills/Insurance: $#{sprintf('%.2f', collective_budget.bills)}
+     * Gas: $#{sprintf('%.2f', collective_budget.gas)}
+     * Groceries/Food: $#{sprintf('%.2f', collective_budget.groceries)}
 
-This leaves roughly $#{sprintf('%.2f', budget.leftovers)} leftover each month for shopping and saving.
+This leaves roughly $#{sprintf('%.2f', collective_budget.leftovers)} leftover each month for shopping and saving.
 MESSAGE
 
 title += ".txt"
 file = open(title, 'w')
 file.write(message)
 members.each do |key, value|
-  file.write(value.savings_goal)
+  file.write(value.savings_goal.message)
 end
 file.close
 
