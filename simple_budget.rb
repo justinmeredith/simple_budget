@@ -20,7 +20,6 @@ class Member
     @monthly_income = hourly_pay.to_f * hours_worked_weekly.to_f * 4
     @annual_income = monthly_income.to_f * 12
     @budget = IndividualBudget.new(@monthly_income)
-    #@savings_goal = nil
   end
 
   def create_goal
@@ -28,7 +27,7 @@ class Member
   end
 
   def set_goal
-    savings_goal.write_message(savings_goal.message, name, budget.leftovers)
+    @savings_goal.write_message(savings_goal.message, name, budget.leftovers)
   end
 end
 
@@ -47,7 +46,7 @@ end
 class CollectiveBudget
   attr_reader :living, :bills, :gas, :groceries, :leftovers, :monthly_income, :annual_income
 
-  def initialize(members)
+  def initialize
     @living = 0
     @bills = 0
     @gas = 0
@@ -55,6 +54,9 @@ class CollectiveBudget
     @leftovers = 0
     @monthly_income = 0
     @annual_income = 0
+  end
+
+  def assign_budget_values(members)
     members.each do |key, value|
       @living += value.budget.living
       @bills += value.budget.bills
@@ -115,7 +117,8 @@ message = String.new
   members[name] = Member.new(name, hourly_pay, hours_worked_weekly)
 end
 
-collective_budget = CollectiveBudget.new(members)
+collective_budget = CollectiveBudget.new
+collective_budget.assign_budget_values(members)
 
 
 # ~   ~   ~   ~   ~   ~   SAVINGS    ~   ~   ~   ~   ~   ~ #
@@ -167,7 +170,7 @@ title += ".txt"
 file = open(title, 'w')
 file.write(message)
 members.each do |key, value|
-  file.write(value.savings_goal.message)
+  file.write(value.savings_goal.message) unless value.savings_goal == nil
 end
 file.close
 
