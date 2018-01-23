@@ -133,10 +133,14 @@ while answer.include?("y")
   end
   print "      > "
   answer = gets.chomp
-  if members[answer].savings_goal == nil
-    members[answer].create_goal
+  if members[answer] == nil
+    puts "That user doesn't exist. Be sure to enter the user's name exactly as it appears.\n"
+  else
+    if members[answer].savings_goal == nil
+      members[answer].create_goal
+    end
+    members[answer].set_goal
   end
-  members[answer].set_goal
   puts "\n\nWould you like to create another savings goal? (y/n)"
   print "   "
   answer = gets.chomp.downcase
