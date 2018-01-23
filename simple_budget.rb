@@ -78,7 +78,7 @@ class SavingsGoal
 
   def write_message(message, name, leftovers)
     puts "\n#{name}'s Goal"
-    print "   Goal Name (laptop, vacation, etc.): "
+    print "   Goal Name: "
     goal_name = gets.chomp
     print "   Goal's Cost: $"
     goal_amount = gets.chomp.to_i
@@ -101,6 +101,7 @@ end
 # ~   ~   ~   ~   ~   ~   MEMBERS    ~   ~   ~   ~   ~   ~ #
 puts "Simple Budget\n\n"
 puts "How many people is this budget for?"
+print "   "
 people = gets.chomp.to_i
 members = Hash.new
 message = String.new
@@ -123,6 +124,7 @@ collective_budget.assign_budget_values(members)
 
 # ~   ~   ~   ~   ~   ~   SAVINGS    ~   ~   ~   ~   ~   ~ #
 puts "\n\nWould you like to create a savings goal?"
+print "   "
 answer = gets.chomp.downcase
 while answer.include?("y")
   puts "\nWhich member would you like to create the goal for?"
@@ -136,12 +138,14 @@ while answer.include?("y")
   end
   members[answer].set_goal
   puts "\n\nWould you like to create another savings goal? (y/n)"
+  print "   "
   answer = gets.chomp.downcase
 end
 
 
 # ~   ~   ~   ~   ~   ~   WRITING    ~   ~   ~   ~   ~   ~ #
 puts "\n\nWhat would you like to call this budget?"
+print "   "
 title = gets.chomp
 
 message = " ~ ~ ~ " + title + " ~ ~ ~\n\n\n"
