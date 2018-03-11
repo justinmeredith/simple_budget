@@ -13,11 +13,12 @@ Gem.win_platform? ? (system "cls") : (system "clear")
 
 # ~   ~   ~   ~   ~   ~   CLASSES    ~   ~   ~   ~   ~   ~ #
 class Member
-  attr_reader :name, :monthly_income, :annual_income, :savings_goal, :budget
+  attr_reader :name, :monthly_income, :annual_income, :savings_goal, :budget, :gross_monthly_income
 
-  def initialize(name, hourly_pay, hours_worked_weekly)
+  def initialize(name, hourly_pay, hours_worked_weekly, percentage_taxed)
     @name = name
-    @monthly_income = hourly_pay.to_f * hours_worked_weekly.to_f * 4
+    @gross_monthly_income = hourly_pay.to_f * hours_worked_weekly.to_f * 4
+    @monthly_income = gross_monthly_income - (gross_monthly_income * percentage_taxed)
     @annual_income = monthly_income.to_f * 12
     @budget = IndividualBudget.new(@monthly_income)
   end
@@ -114,8 +115,10 @@ message = String.new
   hourly_pay = gets.chomp
   print "   Hours Worked Each Week: "
   hours_worked_weekly = gets.chomp
+  print "   Percentage Taxed: "
+  percentage_taxed = gets.chomp.to_f / 100
 
-  members[name] = Member.new(name, hourly_pay, hours_worked_weekly)
+  members[name] = Member.new(name, hourly_pay, hours_worked_weekly, percentage_taxed)
 end
 
 collective_budget = CollectiveBudget.new
